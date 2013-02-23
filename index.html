@@ -11,6 +11,12 @@
         margin-top:100px;
         display:none;
     }
+    
+    #resultados img{
+		width: 300px;
+		float: right;
+		}
+		
     .title {
         margin-top:25px;
         text-align:center;
@@ -104,8 +110,12 @@
             var resultado = {
                 "governador" : governador,
                 "me" : vetos,
-                "percentagem" : ((vetos/governador)*100).toFixed(2)
+                "percentagem" : ((vetos/governador)*100).toFixed(2),
+                "geraldo" : "img/geraldo_feliz.jpg"
             }
+            if (resultado.percentagem < 50) {
+				resultado.geraldo = "img/geraldo_triste.jpg";
+				}
             console.log(resultado);
             resultado_box.render(resultado);
             current = this.parentElement.parentElement.id;
@@ -137,16 +147,18 @@
                     <button class="veto btn btn-large btn-inverse">Veto</button>
                     <button class="resultado btn btn-large btn">Ver resultado</button>
                 </div>
+                <p style = "float: right; margin-top: 50px;">Sobre</p>  
             </div>
         </div>
         <div id="resultados">
             <div data-template>
-            <h2>O Governador vetou {{governador}} projetos em 2013!</h2>
+            <h2>O Governador vetou {{governador}} projetos!</h2>
             <h2>Você vetou {{me}} projetos!</h2>
             <h3>Você pensa {{percentagem}}% como o nosso governador. Parabéns!</h3>
             <div class="controles">
                 <button class="volta btn btn-large">volta</button>
             </div>
+            <img src="{{geraldo}}">
             </div>
         </div>
         <div class="message-box"></div>
