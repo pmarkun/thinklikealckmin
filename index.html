@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>{Você} pensa como o Alckmin?!</title>
+    <script src="vendor/jquery.js"></script>
+    <script src="vendor/tempo.js"></script>
+    <link href="vendor/bootstrap/2.0.0/bootstrap.min.css" rel="stylesheet" media="screen">
+    <style>
+    #resultados {
+        margin-top:100px;
+        display:none;
+    }
+    .title {
+        margin-top:25px;
+        text-align:center;
+    }
+    .projeto {
+        margin-top:100px;
+        display:none;
+    }
+    
+    .ementa {
+        height:100px;
+        font-size:1.2em;
+    }
+    
+    .original {
+        float:right;
+        display:block;
+        clear:both;
+        height:25px;
+    }
+    
+    .controles {
+        margin-top:15px;
+        text-align:center;
+    }
+    </style>
+    
+    <script>
+    function loadJson(url) {
+            var json = '';
+            $.ajax({
+            'async': false,
+            'global': false,
+            'url': url,
+            'dataType': "json",
+            'success': function (data) {
+                    json = data;
+                }
+            });
+            return json;
+        };
+    
+    $(document).ready(function() {
+        data = loadJson("projetos.json");
+        vetos = 0;
+        current = "projeto-0";
+        Tempo.prepare("thinkbox").render(data);
+        //start!
+        $(".projeto").first().toggle();
+        $(".resultado").first().toggle();
+        
+        $(".sanciono").click(function () {
+            $(this).attr("disabled", "disabled");
+            $($(this.nextElementSibling)).attr("disabled", "disabled");
+            
+            //muda pro próximo
+            var current = this.parentElement.parentElement.id;            
+            if (Number(current.split("-")[1]) != data.length-1) {
+                var next = "projeto-" + (Number(current.split("-")[1])+1);
+                $("#"+current).toggle();
+                $("#"+next).toggle();
+            }
+            else {
+                $("#ver-resultado").toggle();
+            }
+        });
+    
+        $(".veto").click(function () {
+            vetos = vetos + 1;
+            $(this).attr("disabled", "disabled");
+            $($(this.previousElementSibling)).attr("disabled", "disabled");
+            
+            //muda pro próximo
+            var current = this.parentElement.parentElement.id;            
+            if (Number(current.split("-")[1]) != data.length-1) {
+                var next = "projeto-" + (Number(current.split("-")[1])+1);
+                $("#"+current).toggle();
+                $("#"+next).toggle();
+            }
+            else {
+                $(".resultado").toggle();
+            }
+        });
+        
+        //hackish
+        $(".projeto").last().addClass("ultimo");
+        
+        $(".resultado").click(function () {
+            var governador = Number(this.parentElement.parentElement.id.split("-")[1]);            
+            var resultado = {
+                "governador" : governador,
+                "me" : vetos,
+                "percentagem" : ((vetos/governador)*100).toFixed(2)
+            }
+            console.log(resultado);
+            Tempo.prepare("resultados").render(resultado);
+            current = this.parentElement.parentElement.id;
+            $("#"+current).toggle();
+            $("#resultados").toggle();
+        
+            $(".volta").click(function () {
+                console.log(current);
+                $("#"+current).toggle();
+                $("#resultados").toggle();
+            });
+        
+        });
+        
+    });
+    
+    </script>
+  </head>
+
+<body>
+    <div class="container">
+        <h1 class="title">Penso como Alckmin?</h1>
+        <div id="thinkbox">
+            <div data-template class="projeto" id="projeto-{{id}}">
+                <blockquote class="ementa">{{ementa}}</blockquote>
+                <a class="original" href="{{url}}">{{projeto}}</a>
+                <div class="controles">
+                    <button class="sanciono btn btn-large btn-primary">Sanciono</button>
+                    <button class="veto btn btn-large btn-inverse">Veto</button>
+                    <button class="resultado btn btn-large btn">Ver resultado</button>
+                </div>
+            </div>
+        </div>
+        <div id="resultados">
+            <div data-template>
+            <h2>O Governador vetou {{governador}} projetos em 2013!</h2>
+            <h2>Você vetou {{me}} projetos!</h2>
+            <h3>Você pensa {{percentagem}}% como o nosso governador. Parabéns!</h3>
+            <div class="controles">
+                <button class="volta btn btn-large">volta</button>
+            </div>
+            </div>
+        </div>
+        <div class="message-box"></div>
+    </div>
+</body>
+</html>
