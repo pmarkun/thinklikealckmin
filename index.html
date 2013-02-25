@@ -5,7 +5,9 @@
     <title>{Você} pensa como o Alckmin?!</title>
     <script src="vendor/jquery.js"></script>
     <script src="vendor/tempo.js"></script>
-    <link href="vendor/bootstrap/2.0.0/bootstrap.min.css" rel="stylesheet" media="screen">
+    <script src="vendor/showdown.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">
     <style>
     #resultados {
         margin-top:100px;
@@ -30,7 +32,7 @@
         height:100px;
         font-size:1.2em;
     }
-    
+
     .original {
         float:right;
         display:block;
@@ -42,6 +44,15 @@
         margin-top:15px;
         text-align:center;
     }
+    
+    body .modal {
+        width: 640px;
+        max-height: 80%;
+        overflow-y: auto;
+        /* must be half of the width, minus scrollbar on the left (30px) */
+        margin-left: -290px;
+    }
+
     </style>
     
     <script>
@@ -59,7 +70,22 @@
             return json;
         };
     
+    function loadMd(url) {
+            var json = '';
+            $.ajax({
+            'async': false,
+            'global': false,
+            'url': url,
+            'dataType': "html",
+            'success': function (data) {
+                    json = data;
+                }
+            });
+            return json;
+        };
+        
     $(document).ready(function() {
+        var converter = new Showdown.converter();
         data = loadJson("projetos.json");
         vetos = 0;
         current = "projeto-0";
@@ -105,6 +131,15 @@
         //hackish
         $(".projeto").last().addClass("ultimo");
         
+        $(".integra").click(function () {
+            var pl_id = $(this).attr("id");
+            var integra = loadMd("data/" + pl_id + ".md");
+            $("#modalbox").text("");
+            $("#modalbox").append($("<center><a href='http://www.al.sp.gov.br/spl_consultas/consultaDetalhesProposicao.do?id="+ pl_id + "'>- link original -</a></center>"));
+            $("#modalbox").append($("<div>"+converter.makeHtml(integra)+"</div>"));
+            $("#modalbox").modal();
+            
+        });
         $(".resultado").click(function () {
             var governador = Number(this.parentElement.parentElement.id.split("-")[1]);            
             var resultado = {
@@ -140,7 +175,7 @@
         <h1 class="title">Penso como Alckmin?</h1>
         <div id="thinkbox">
             <div data-template class="projeto" id="projeto-{{id}}">
-                <blockquote class="ementa">{{ementa}}</blockquote>
+                <blockquote class="ementa">{{ementa}} (<a href="#modalbox" id="{{pl_id}}" title="Veja a integra!" class="integra">?</a>)</blockquote>
                 <a class="original" href="{{url}}">{{projeto}}</a>
                 <div class="controles">
                     <button class="sanciono btn btn-large btn-primary">Sanciono</button>
@@ -161,7 +196,7 @@
             <img src="{{geraldo}}">
             </div>
         </div>
-        <div class="message-box"></div>
     </div>
+    <div id="modalbox" class="modal hide fade"></div>
 </body>
 </html>
